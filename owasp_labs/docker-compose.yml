@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Main OWASP Labs server
+  owasp-server:
+    build: .
+    ports:
+      - "1337:1337"
+    environment:
+      - PORT=1337
+    volumes:
+      - .:/app
+    command: python server.py
+    networks:
+      - owasp-network
+
+  # Malicious website server
+  malicious-website:
+    build: .
+    ports:
+      - "1338:1338"
+    volumes:
+      - .:/app
+    command: python malicious_website.py
+    networks:
+      - owasp-network
+
+networks:
+  owasp-network:
+    driver: bridge 
