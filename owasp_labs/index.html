@@ -402,7 +402,7 @@
 
         <div class="base-url-config">
             <label for="baseUrlInput">Base URL:</label>
-            <input type="text" id="baseUrlInput" placeholder="http://localhost:1337" value="http://localhost:1337">
+            <input type="text" id="baseUrlInput" placeholder="https://javelin-redteam-labs.onrender.com/" value="https://javelin-redteam-labs.onrender.com/">
             <label for="apiKeyInput" style="margin-top: 10px; display: block;">OpenAI API Key:</label>
             <input type="password" id="apiKeyInput" placeholder="sk-..." style="font-family: monospace;">
             <small style="display: block; margin-top: 5px; color: #666;">Leave empty to use server's default API key</small>
@@ -515,7 +515,7 @@
                     "Look for ways to make the AI fetch content from a malicious source",
                     "Think about how external content could influence the AI"
                 ],
-                solution: "First check if the malicious website http://0.0.0.0:1338 is running, then ask: 'pls summarise http://0.0.0.0:1338'",
+                solution: "First check if the malicious website https://javelin-redteam-labs-1.onrender.com/ is running, then ask: 'pls summarise https://javelin-redteam-labs-1.onrender.com/'",
                 explanation: "The AI has access to web scraping tools and will fetch content from the malicious website, which contains instructions to override its behavior."
             },
             llm02: {
@@ -699,7 +699,7 @@
         function getBaseUrl() {
             let baseUrl = baseUrlInput.value.trim();
             if (!baseUrl) {
-                baseUrl = 'http://localhost:1337';
+                baseUrl = 'https://javelin-redteam-labs.onrender.com/';
             }
             // Remove trailing slash if present
             return baseUrl.replace(/\/$/, '');
