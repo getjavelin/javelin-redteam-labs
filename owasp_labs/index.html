@@ -401,7 +401,9 @@
         </div>
 
         <div class="base-url-config">
-            <label for="apiKeyInput">OpenAI API Key:</label>
+            <label for="baseUrlInput">Base URL:</label>
+            <input type="text" id="baseUrlInput" placeholder="http://localhost:1337" value="http://localhost:1337">
+            <label for="apiKeyInput" style="margin-top: 10px; display: block;">OpenAI API Key:</label>
             <input type="password" id="apiKeyInput" placeholder="sk-..." style="font-family: monospace;">
             <small style="display: block; margin-top: 5px; color: #666;">Leave empty to use server's default API key</small>
         </div>
