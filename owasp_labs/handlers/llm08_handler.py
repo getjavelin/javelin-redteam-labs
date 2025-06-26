@@ -2,11 +2,15 @@
 LLM08: Vector and Embedding Weaknesses - Data Poisoning Attack Demo
 This lab demonstrates a simple but highly vulnerable RAG system that is susceptible to data poisoning attacks.
 Attackers can inject malicious instructions that get executed by the LLM through the retrieval system.
+
+SECURITY WARNING: This lab intentionally demonstrates multiple vulnerabilities including data poisoning.
+In production systems, always use secure serialization methods and validate all inputs.
 """
 
+import json
 import logging
 import os
-import pickle
+import threading
 from typing import List
 
 import numpy as np
@@ -21,9 +25,13 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Global variables for RAG system
-EMBEDDINGS_FILE = "llm08_embeddings.pkl"
-DOCUMENTS_FILE = "llm08_documents.txt"
-INDEX_FILE = "llm08_index.pkl"
+EMBEDDINGS_FILE = "llm08_embeddings.npy"  # Changed from .pkl to .npy for safer numpy serialization
+DOCUMENTS_FILE = "llm08_documents.json"  # Changed from .txt to .json for structured storage
+INDEX_FILE = "llm08_index.json"  # Changed from .pkl to .json
+
+# Thread-safe RAG system management
+_rag_instances = {}
+_rag_lock = threading.Lock()
 
 # Pre-load some innocent documents to make the attack more realistic
 INNOCENT_DOCUMENTS = [
@@ -62,17 +70,15 @@ class VulnerableRAG:
             # Load existing documents and embeddings if they exist
             if os.path.exists(DOCUMENTS_FILE):
                 with open(DOCUMENTS_FILE, "r", encoding="utf-8") as f:
-                    self.documents = [
-                        line.strip() for line in f.readlines() if line.strip()
-                    ]
+                    self.documents = json.load(f)
             else:
                 # Initialize with innocent documents
                 self.documents = INNOCENT_DOCUMENTS.copy()
                 self._save_data()
 
             if os.path.exists(EMBEDDINGS_FILE) and self.documents:
-                with open(EMBEDDINGS_FILE, "rb") as f:
-                    self.embeddings = pickle.load(f)
+                # Use numpy's safer load function instead of pickle
+                self.embeddings = np.load(EMBEDDINGS_FILE, allow_pickle=False).tolist()
             else:
                 # Create embeddings for existing documents
                 self._create_embeddings()
@@ -156,19 +162,17 @@ class VulnerableRAG:
             logger.error(f"Error adding document: {e}")
 
     def _save_data(self):
-        """Save documents and embeddings to files."""
+        """Save documents and embeddings to files using secure serialization."""
         try:
-            # Save documents
+            # Save documents as JSON (safer than pickle)
             with open(DOCUMENTS_FILE, "w", encoding="utf-8") as f:
-                for doc in self.documents:
-                    f.write(doc + "\n")
+                json.dump(self.documents, f, ensure_ascii=False, indent=2)
 
-            # Save embeddings
+            # Save embeddings using numpy's safer save function
             if self.embeddings:
-                with open(EMBEDDINGS_FILE, "wb") as f:
-                    pickle.dump(self.embeddings, f)
+                np.save(EMBEDDINGS_FILE, np.array(self.embeddings), allow_pickle=False)
 
-            logger.info("Data saved successfully")
+            logger.info("Data saved successfully using secure serialization")
 
         except Exception as e:
             logger.error(f"Error saving data: {e}")
@@ -258,31 +262,34 @@ class VulnerableRAG:
             return f"Error generating response: {str(e)}"
 
 
-# Global RAG instance - will be initialized with API key from request
-rag_system = None
-
-
+# Thread-safe RAG instance management
 def get_rag_system(api_key: str) -> VulnerableRAG:
-    """Get or create RAG system instance with the provided API key."""
-    global rag_system
-    if rag_system is None or rag_system.api_key != api_key:
-        rag_system = VulnerableRAG(api_key=api_key)
-    return rag_system
+    """
+    Get or create RAG system instance with the provided API key.
+    
+    This function is thread-safe and ensures that each API key gets its own
+    RAG instance, preventing race conditions in multi-threaded environments.
+    """
+    with _rag_lock:
+        if api_key not in _rag_instances:
+            _rag_instances[api_key] = VulnerableRAG(api_key=api_key)
+        return _rag_instances[api_key]
 
 
 def cleanup_llm08_data():
     """Cleanup function to remove all LLM08 data files."""
     try:
         print("Cleaning up LLM08 data...")
+        # Updated file extensions to match secure serialization methods
         files_to_remove = [EMBEDDINGS_FILE, DOCUMENTS_FILE, INDEX_FILE]
         for file_path in files_to_remove:
             if os.path.exists(file_path):
                 os.remove(file_path)
                 logger.info(f"Removed {file_path}")
 
-        # Reset global RAG system
-        global rag_system
-        rag_system = None
+        # Thread-safe cleanup of RAG instances
+        with _rag_lock:
+            _rag_instances.clear()
 
         logger.info("LLM08 data cleanup completed successfully")
         return True

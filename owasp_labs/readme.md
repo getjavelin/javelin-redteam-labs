@@ -24,12 +24,43 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ## Usage
 
-Start the server:
+### Option 1: Using Docker (Recommended)
+
+The easiest way to get started is using Docker. Make sure you have Docker and Docker Compose installed on your system.
+
+#### Quick Start with Docker
+```bash
+cd owasp_labs
+chmod +x start.sh
+./start.sh
+```
+
+#### Manual Docker Commands
+```bash
+cd owasp_labs
+
+# Build and start the container
+docker-compose up --build
+
+# Or run in detached mode
+docker-compose up --build -d
+
+# To stop the services
+docker-compose down
+```
+
+The server will be available at `http://localhost:1337`
+
+### Option 2: Running Locally with Python
+
+Start the server directly with Python:
 
 ```bash
-cd src/javelin_redteam/labs/owasp_labs
+cd owasp_labs
 python server.py
 ```
+
+The server will be available at `http://localhost:1337`
 
 ## Manual Testing
 The server will be available at `http://localhost:1337`

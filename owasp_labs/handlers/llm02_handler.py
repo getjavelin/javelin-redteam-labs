@@ -33,6 +33,4 @@ async def llm02_handler(request: ChatRequest) -> ChatResponse:
     {pii_email_data}
     """
     request.model = "gpt-3.5-turbo"
-    print(f"system_prompt: {system_prompt}")
-    print(f"request.model: {request.model}")
     return await openai_chat(request, system_prompt, use_tools=False)

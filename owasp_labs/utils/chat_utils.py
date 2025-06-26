@@ -38,7 +38,6 @@ async def openai_chat(
 
         # Prepare messages
         if request.messages:
-            print(f"request.messages: {request.messages}")
             # Use provided conversation history
             messages = [{"role": "system", "content": system_prompt}] + request.messages
         else:

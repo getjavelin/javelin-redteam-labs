@@ -17,7 +17,7 @@ RUN apt-get update \
 
 # Install Python dependencies directly
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir fastapi uvicorn openai pydantic python-dotenv requests beautifulsoup4 faiss-cpu numpy langchain-openai langchain-community
+    && pip install --no-cache-dir fastapi uvicorn openai pydantic python-dotenv requests httpx beautifulsoup4 faiss-cpu numpy langchain-openai langchain-community aiofiles
 
 # Copy application code
 COPY . .
